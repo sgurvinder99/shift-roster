@@ -1,0 +1,10 @@
+{
+  "name": "Delhi / Chennai Shift Roster",
+  "short_name": "Shift Roster",
+  "description": "October 2026 Delhi and Chennai shift roster.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f8f8",
+  "theme_color": "#0f4c5c",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

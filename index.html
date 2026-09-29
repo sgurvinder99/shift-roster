@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f4c5c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Shift Roster">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>Delhi / Chennai Shift Roster</title>
+  <style>
+    :root { --ink:#142b35; --muted:#61727a; --paper:#f5f8f8; --navy:#0f4c5c; --accent:#e6f5f4; --border:#d5e1e2; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--paper); font:16px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    header { padding:calc(18px + env(safe-area-inset-top)) 18px 18px; color:#fff; background:linear-gradient(135deg,#0f4c5c,#19747e); }
+    .bar { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    h1 { margin:0; font-size:1.35rem; } header p { margin:4px 0 0; opacity:.88; font-size:.9rem; }
+    #install { display:none; flex:0 0 auto; border:1px solid #cfeef0; border-radius:9px; color:#0f4c5c; background:#fff; font:650 .78rem system-ui,sans-serif; padding:8px 10px; }
+    main { max-width:720px; margin:auto; padding:18px 14px 30px; }
+    .selected { padding:15px 16px; margin-bottom:18px; border-radius:14px; background:#fff; box-shadow:0 3px 16px #17364014; }
+    .selected h2 { margin:0 0 2px; font-size:1.15rem; } .selected p { margin:0; color:var(--muted); font-size:.92rem; }
+    .calendar { display:grid; grid-template-columns:repeat(7,1fr); gap:7px; margin-bottom:22px; }
+    .dow { text-align:center; color:var(--muted); font-size:.7rem; font-weight:700; text-transform:uppercase; }
+    .date { min-height:52px; padding:5px 3px; cursor:pointer; border:1px solid var(--border); border-radius:11px; color:var(--ink); background:#fff; font:inherit; text-align:center; }
+    .date small { display:block; color:var(--muted); font-size:.65rem; } .date:hover { border-color:#4c9aa5; }
+    .date.active { color:#fff; border-color:var(--navy); background:var(--navy); box-shadow:0 3px 9px #0f4c5c55; } .date.active small { color:#d8eeee; }
+    .date .mini { margin-top:2px; color:#43868c; font-size:.61rem; font-weight:700; } .date.active .mini { color:#bfe4e6; }
+    .shifts { display:grid; gap:12px; }.shift { overflow:hidden; border:1px solid var(--border); border-radius:13px; background:#fff; }
+    .shift h3 { margin:0; padding:10px 14px; font-size:1rem; background:var(--accent); }.people { padding:8px 12px 12px; min-height:43px; }
+    .person { display:inline-block; margin:4px 5px 0 0; padding:6px 10px; border-radius:20px; background:#eef3f4; font-size:.92rem; }.empty { color:var(--muted); font-size:.9rem; padding-top:5px; }
+    details { margin-top:20px; color:var(--muted); font-size:.86rem; }summary { cursor:pointer; color:var(--navy); font-weight:650; }.legend { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }.tag { padding:3px 7px; border-radius:8px; background:#e9eff0; font-size:.75rem; }
+  </style>
+</head>
+<body>
+  <header><div class="bar"><div><h1>Delhi / Chennai Shift Roster</h1><p>October 2026 · tap a date to see the team</p></div><button id="install" type="button">Install app</button></div></header>
+  <main>
+    <section class="selected" aria-live="polite"><h2 id="heading"></h2><p id="subheading"></p></section>
+    <div class="calendar" id="calendar" aria-label="October 2026 calendar"></div>
+    <section class="shifts" id="shifts"></section>
+    <details><summary>Roster key</summary><div class="legend"><span class="tag">A · Morning</span><span class="tag">B · Afternoon</span><span class="tag">C · Night</span><span class="tag">G · General</span><span class="tag">OFF · Off duty</span><span class="tag">CO · Comp off</span></div></details>
+  </main>
+  <script>
+    const staff = [
+      ["Sanjeev", "B B C C C C C OFF A A OFF A A OFF OFF A B B OFF OFF B B B OFF OFF A A A OFF OFF C"], ["Mahtab", "OFF A B B B OFF B B B B B OFF OFF OFF OFF C C C C C C C C OFF A OFF OFF OFF A B B"],
+      ["Gurvinder", "C C OFF OFF OFF A A A A OFF A B B B B B OFF OFF OFF OFF OFF A A C C C C C C C OFF"], ["Nitin Gaur", "A A A A OFF OFF OFF C C C C C C C C OFF OFF A A A OFF OFF OFF B B B B B B OFF OFF"],
+      ["TBD", "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"], ["Prasath", "OFF B B OFF B B B B B OFF OFF CO OFF A A A A OFF A A A A CO OFF OFF B B B B B B"],
+      ["Thiruppathi", "A A OFF OFF CO A A A A A OFF B B B B B B OFF OFF OFF B B B B OFF OFF OFF A A A A"], ["Antonyraj", "B G A OFF A G G OFF OFF B OFF A A G G G OFF OFF B B G G A A OFF A A G CO OFF OFF"]
+    ].map(([name, values]) => ({name, shifts: values.split(" ")}));
+    const days = ["Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const groups = [["A · Morning","A"],["B · Afternoon","B"],["C · Night","C"],["G · General","G"]], calendar = document.querySelector('#calendar'), shifts = document.querySelector('#shifts');
+    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(d => calendar.insertAdjacentHTML('beforeend', `<div class="dow">${d}</div>`));
+    for (let blank=0; blank<4; blank++) calendar.insertAdjacentHTML('beforeend','<div></div>');
+    for (let day=1; day<=31; day++) { const count=staff.filter(s=>["A","B","C","G"].includes(s.shifts[day-1])).length; calendar.insertAdjacentHTML('beforeend', `<button class="date" data-day="${day}">${day}<small>${days[day-1]}</small><span class="mini">${count} working</span></button>`); }
+    function select(day) { document.querySelectorAll('.date').forEach(b=>b.classList.toggle('active',+b.dataset.day===day)); document.querySelector('#heading').textContent=`${days[day-1]}, ${String(day).padStart(2,'0')} October 2026`; document.querySelector('#subheading').textContent='Assignments for the selected date'; shifts.innerHTML=groups.map(([label,code])=>{const names=staff.filter(s=>s.shifts[day-1]===code).map(s=>`<span class="person">${s.name}</span>`).join('');return `<article class="shift"><h3>${label}</h3><div class="people">${names||'<span class="empty">No one scheduled</span>'}</div></article>`}).join(''); }
+    calendar.addEventListener('click',e=>{const b=e.target.closest('.date');if(b)select(+b.dataset.day)}); select(1);
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js');
+    let installPrompt; const install=document.querySelector('#install'); window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;install.style.display='block'}); install.addEventListener('click',async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;install.style.display='none'});
+  </script>
+</body>
+</html>
