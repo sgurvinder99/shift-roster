@@ -1,4 +1,4 @@
-const CACHE = 'shift-roster-oct-2026-v1';
+const CACHE = 'shift-roster-sep-oct-2026-v2';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
